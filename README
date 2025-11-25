@@ -1,0 +1,34 @@
+# CSV-backed OpenAI Chatbot
+
+This repository contains a simple Flask web application that answers questions using the OpenAI API and context pulled from CSV files. The included `data/faq.csv` file provides sample FAQ entries for testing.
+
+## Setup
+
+1. Create a virtual environment and install dependencies:
+   ```bash
+   python -m venv .venv
+   source .venv/bin/activate
+   pip install -r requirements.txt
+   ```
+
+2. Set your OpenAI API key:
+   ```bash
+   export OPENAI_API_KEY=your_api_key_here
+   ```
+
+3. Start the development server:
+   ```bash
+   python app.py
+   ```
+
+   The app listens on port `8000` by default. Visit `http://localhost:8000` to interact with the chatbot.
+
+## How it works
+
+- CSV files inside the `data/` directory are loaded at startup.
+- When a message is submitted, the server selects the top matching FAQ entries using a lightweight string similarity check.
+- The selected rows are sent as context to the OpenAI chat completion API. If there is not enough data to answer, the bot will say so.
+
+## Deployment
+
+For production, run the app behind a process manager (e.g., systemd, Supervisor) or containerize it. Set the `PORT` environment variable to override the default listening port.
