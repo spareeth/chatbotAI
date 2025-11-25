@@ -1,0 +1,68 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>CSV Chatbot</title>
+    <link rel="stylesheet" href="/static/styles.css" />
+  </head>
+  <body>
+    <main class="container">
+      <header>
+        <h1>CSV-backed Chatbot</h1>
+        <p>Ask a question and the bot will answer using the embedded CSV FAQ data.</p>
+      </header>
+
+      <section class="chat-panel" id="chat-log"></section>
+
+      <form id="chat-form">
+        <label for="message">Your message</label>
+        <div class="input-row">
+          <input id="message" name="message" required placeholder="Ask about support hours, billing, or the mobile app..." />
+          <button type="submit">Send</button>
+        </div>
+      </form>
+    </main>
+
+    <script>
+      const form = document.getElementById('chat-form');
+      const chatLog = document.getElementById('chat-log');
+      const messageInput = document.getElementById('message');
+
+      const appendMessage = (author, text) => {
+        const item = document.createElement('article');
+        item.classList.add('chat-entry', author);
+        item.innerHTML = `<h3>${author === 'user' ? 'You' : 'Bot'}</h3><p>${text}</p>`;
+        chatLog.appendChild(item);
+        chatLog.scrollTop = chatLog.scrollHeight;
+      };
+
+      form.addEventListener('submit', async (event) => {
+        event.preventDefault();
+        const text = messageInput.value.trim();
+        if (!text) return;
+
+        appendMessage('user', text);
+        messageInput.value = '';
+
+        try {
+          const response = await fetch('/chat', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ message: text }),
+          });
+
+          const payload = await response.json();
+          if (!response.ok) {
+            appendMessage('bot', payload.error || 'The server returned an error.');
+            return;
+          }
+
+          appendMessage('bot', payload.reply);
+        } catch (error) {
+          appendMessage('bot', 'Failed to reach the server.');
+        }
+      });
+    </script>
+  </body>
+</html>
